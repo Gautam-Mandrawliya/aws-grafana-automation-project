@@ -1,0 +1,50 @@
+name: Deploy Monitoring Stack
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Validate SNS Template
+        run: |
+          aws cloudformation validate-template \
+           --template-body file://cloudformation/sns.yaml
+
+      - name: Deploy SNS Stack
+        run: |
+          aws cloudformation deploy \
+            --template-file cloudformation/sns.yaml \
+            --stack-name sns-stack \
+            --capabilities CAPABILITY_NAMED_IAM
+
+      - name: Validate Grafana Template
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://cloudformation/grafana.yaml
+            
+      - name: Deploy Grafana Stack
+        run: |
+          aws cloudformation deploy \
+            --template-file cloudformation/grafana.yaml \
+            --stack-name grafana-stack \
+            --capabilities CAPABILITY_NAMED_IAM

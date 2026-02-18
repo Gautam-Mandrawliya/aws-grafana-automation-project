@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Stable SNS Topic for Grafana Alerts
+
+Resources:
+  GrafanaAlertTopic:
+    Type: AWS::SNS::Topic
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TopicName: aws-grafana-alert-topic
+
+Outputs:
+  GrafanaAlertTopicArn:
+    Description: SNS Topic ARN
+    Value: !Ref GrafanaAlertTopic
+    Export:
+      Name: GrafanaAlertTopicArn
